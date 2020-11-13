@@ -3,7 +3,8 @@ const jwt = require("jsonwebtoken")
 const { UserInputError } = require("apollo-server")
 const bcrypt = require("bcryptjs")
 const { SUPER_SECRET_KEY } = require("../../config")
-const { validateRegisterInputs, validateLoginInputs } = require("../../utils/validators")
+const { validateRegisterInputs, validateLoginInputs, validateUpdateProfile } = require("../../utils/validators")
+const checkAuth = require("../../utils/checkAuth")
 
 function generateToken(user) {
   return jwt.sign(
@@ -14,7 +15,7 @@ function generateToken(user) {
       createdAt: user.createdAt,
     },
     SUPER_SECRET_KEY,
-    { expiresIn: "2h" }
+    { expiresIn: "24h" }
   )
 }
 
@@ -30,12 +31,13 @@ module.exports = {
         throw new UserInputError("Username taken", { errors: { username: "Username already exists" } })
       }
       password = await bcrypt.hash(password, 12)
+      const createdAt = new Date().toISOString()
       const newUser = new User({
         username,
         password,
         confirmPassword,
         email,
-        createdAt: new Date().toISOString(),
+        createdAt,
       })
       const res = await newUser.save()
       const token = generateToken(res)
@@ -57,6 +59,33 @@ module.exports = {
         throw new UserInputError("Errors", { errors })
       }
       return { ...user._doc, id: user._id, token: generateToken(user) }
+    },
+    async updateProfile(_, { dateOfBirth = "", about = "", profilePicture = "", address }, context) {
+      const { username } = checkAuth(context)
+      const { errors, valid } = validateUpdateProfile(address)
+      if (!valid) {
+        throw new UserInputError("Params error", { errors })
+      }
+      if (!address) {
+        address = {
+          addressLine1: "",
+          addressLine2: "",
+          city: "",
+          zipCode: "",
+          state: "",
+        }
+      }
+      try {
+        const user = await User.findOneAndUpdate({ username }, { dateOfBirth, about, profilePicture, address }, { new: true })
+        if (!user) {
+          throw new UserInputError("User not found")
+        }
+        const userDetails = await user.save()
+        console.log(userDetails)
+        return userDetails
+      } catch (error) {
+        throw new UserInputError("Params error", { errors })
+      }
     },
   },
 }

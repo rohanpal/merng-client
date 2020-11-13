@@ -7,7 +7,7 @@ const postSchema = new Schema({
   createdAt: String,
   comments: [{ body: String, createdAt: String, username: String }],
   likes: [{ createdAt: String, username: String }],
-  user: { type: Schema.Types.String, ref: "users" },
+  user: { type: Schema.Types.String, ref: "User" },
 })
 
 module.exports = model("Post", postSchema)

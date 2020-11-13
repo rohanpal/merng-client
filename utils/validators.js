@@ -26,11 +26,31 @@ module.exports.validateLoginInputs = (username, password) => {
   }
   return { errors, valid: Object.keys(errors).length < 1 }
 }
-
+const requiredError = "This field is required"
 module.exports.validateCommentInput = (body) => {
   const errors = {}
   if (body.trim() === "") {
     errors.body = "Comment can't be empty"
+  }
+  return { errors, valid: Object.keys(errors).length < 1 }
+}
+
+module.exports.validateUpdateProfile = (address) => {
+  const errors = {}
+  if (address && Object.keys(address).length) {
+    const { addressLine1, addressLine2, city, state, zipCode } = address
+    if (!addressLine1.trim()) {
+      errors.addressLine1 = requiredError
+    }
+    if (!city.trim()) {
+      errors.city = requiredError
+    }
+    if (!state.trim()) {
+      errors.state = requiredError
+    }
+    if (!zipCode) {
+      errors.zipCode = requiredError
+    }
   }
   return { errors, valid: Object.keys(errors).length < 1 }
 }

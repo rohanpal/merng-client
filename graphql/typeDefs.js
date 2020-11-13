@@ -17,6 +17,16 @@ module.exports = gql`
     token: String!
     username: String!
     createdAt: String!
+    dateOfBirth: String
+    about: String
+    address: Address
+  }
+  type Address {
+    addressLine1: String!
+    addressLine2: String
+    city: String!
+    state: String!
+    zipCode: String!
   }
   type Comment {
     id: ID!
@@ -35,9 +45,17 @@ module.exports = gql`
     confirmPassword: String!
     email: String!
   }
+  input inputAddress {
+    addressLine1: String!
+    addressLine2: String
+    city: String!
+    state: String!
+    zipCode: String!
+  }
   type Query {
     getPosts: [Post]
     getPost(postId: ID!): Post!
+    getUser(userId: ID!): User!
   }
   type Mutation {
     register(registerInput: RegisterInput): User!
@@ -47,6 +65,7 @@ module.exports = gql`
     createComment(postId: ID!, body: String!): Post!
     deleteComment(postId: ID!, commentId: ID!): Post!
     likePost(postId: ID!): Post!
+    updateProfile(dateOfBirth: String, about: String, profilePicture: String, address: inputAddress): User!
   }
   type Subscription {
     newPost: Post!
